@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-
 [Serializable]
 public partial struct Channel : IEquatable<Channel>
 {
@@ -19,5 +18,5 @@ public partial struct Channel : IEquatable<Channel>
     public bool Equals(Channel other) => Value == other.Value;
     public override bool Equals(object obj) => obj is Channel other && Equals(other);
     public override int GetHashCode() => Value.GetHashCode();
-    public override string ToString() => Value.ToString();
+    public override string ToString() => DBug.GetChannelName(this);
 }

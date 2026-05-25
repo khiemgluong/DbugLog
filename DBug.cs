@@ -1,10 +1,12 @@
 #define UNITY_DIALOGS // Comment out to disable dialogs for fatal errors
 using UnityEngine;
 using System.Collections.Generic;
+using System.Reflection;
 
 #if UNITY_EDITOR && UNITY_DIALOGS
 using UnityEditor;
 #endif
+
 
 public enum Priority
 {
@@ -18,21 +20,21 @@ public enum Priority
     FatalError,
 }
 
-public class DbugLog
+public class DBug
 {
     public static readonly Channel kAllChannels = new Channel(0xFFFFFFFF);
 
-    private static DbugLog instance;
-    private static DbugLog Instance
+    private static DBug instance;
+    private static DBug Instance
     {
         get
         {
-            return instance ?? (instance = new DbugLog());
+            return instance ?? (instance = new DBug());
         }
 
     }
 
-    private DbugLog()
+    private DBug()
     {
         m_Channels = kAllChannels;
     }
@@ -80,7 +82,10 @@ public class DbugLog
     }
 
     // Logging functions
-
+    public static void Log(string message, Object context = null)
+    {
+        Debug.Log(message, context);
+    }
     /// <summary>
     /// Standard logging function, priority will default to info level
     /// </summary>
@@ -110,21 +115,10 @@ public class DbugLog
     /// <param name="logChannel"></param>
     /// <param name="priority"></param>
     /// <param name="message"></param>
-    public static void Log(Channel logChannel, Priority priority, string message)
-    {
-        FinalLog(logChannel, priority, message);
-    }
-
-    /// <summary>
-    /// Log with format args, priority will default to info level
-    /// </summary>
-    /// <param name="logChannel"></param>
-    /// <param name="message"></param>
-    /// <param name="args"></param>
-    public static void Log(Channel logChannel, string message, params object[] args)
-    {
-        FinalLog(logChannel, Priority.Info, string.Format(message, args));
-    }
+    // public static void Log(Channel logChannel, Priority priority, string message)
+    // {
+    //     FinalLog(logChannel, priority, message);
+    // }
 
     /// <summary>
     /// Log with format args and specified priority
@@ -174,7 +168,7 @@ public class DbugLog
                     Debug.Break();
                 }
             }
-#endif 
+#endif
             // Call the correct unity logging function depending on the type of error 
             switch (priority)
             {
@@ -227,36 +221,32 @@ public class DbugLog
         return string.Format("[{0}] {1}", channelName, message);
     }
 
-    private static string GetChannelName(Channel logChannel)
+    public static string GetChannelName(Channel logChannel)
     {
-        foreach (var entry in channelToName)
-        {
-            if (entry.Key.Value == logChannel.Value)
-                return entry.Value;
-        }
+        if (channelToName.TryGetValue(logChannel, out string name))
+            return name;
         return "Unknown";
     }
 
-    private static readonly Dictionary<Channel, string> channelToName = new()
+    private static readonly Dictionary<Channel, string> channelToName = InitializeChannelNames();
+
+    private static Dictionary<Channel, string> InitializeChannelNames()
     {
-        { Channel.Characters.Combat, "Characters:Combat" },
-        { Channel.Characters.Controls, "Characters:Controls" },
-        { Channel.Characters.Targeting, "Characters:Targeting" },
-        { Channel.Characters.NPC, "Characters:NPC" },
-        { Channel.Environment.Prop, "Environment:Prop" },
-        { Channel.Environment.Object, "Environment:Object" },
-        { Channel.Environment.ObjItems, "Environment:ObjItems" },
-        { Channel.Environment.Events, "Environment:Events" },
-        { Channel.System.Serializers, "System:Serializers" },
-        { Channel.System.Managers, "System:Managers" },
-        { Channel.System.Utilities, "System:Utilities" },
-        { Channel.System.Console, "System:Console" },
-        { Channel.UserInterface.Overlay, "UI:Overlay" },
-        { Channel.UserInterface.Terminal, "UI:Terminal" },
-        { Channel.UserInterface.Scenes, "UI:Scenes" },
-        { Channel.Editor.Characters, "Editor:Characters" },
-        { Channel.Editor.Environment, "Editor:Environment" },
-    };
+        var dict = new Dictionary<Channel, string>();
+        var channelType = typeof(Channel);
+        foreach (var nestedType in channelType.GetNestedTypes())
+        {
+            foreach (var field in nestedType.GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (field.FieldType == channelType)
+                {
+                    Channel channel = (Channel)field.GetValue(null);
+                    dict[channel] = $"{nestedType.Name}.{field.Name}";
+                }
+            }
+        }
+        return dict;
+    }
 
     /// <summary>
     /// Map a channel to a colour, using Unity's rich text system
@@ -266,11 +256,11 @@ public class DbugLog
         { Channel.Characters.Combat, "lightblue" },
         { Channel.Characters.Controls, "lightblue" },
         { Channel.Characters.Targeting, "lightblue" },
-        { Channel.Characters.NPC, "lightblue" },
+        { Channel.Characters.NPCs, "lightblue" },
         { Channel.Environment.Prop, "green" },
         { Channel.Environment.Object, "green" },
-        { Channel.Environment.ObjItems, "green" },
-        { Channel.Environment.Events, "green" },
+        { Channel.Environment.Items, "green" },
+        { Channel.Environment.Terrain, "green" },
         { Channel.System.Serializers, "yellow" },
         { Channel.System.Managers, "yellow" },
         { Channel.System.Utilities, "yellow" },
