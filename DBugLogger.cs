@@ -172,6 +172,7 @@ public class DBug
         { "Data", "cyan" },
         { "Environment", "green" },
         { "Editor", "orange" },
+        { "Event", "magenta" },
         { "System", "yellow" },
         { "UserInterface", "purple" },
     };
