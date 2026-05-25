@@ -3,12 +3,12 @@ using System;
 [Serializable]
 public partial struct Channel : IEquatable<Channel>
 {
-    public uint Value;
+    public ulong Value;
 
-    public Channel(uint value) => Value = value;
+    public Channel(ulong value) => Value = value;
 
-    public static implicit operator uint(Channel c) => c.Value;
-    public static implicit operator Channel(uint v) => new Channel(v);
+    public static implicit operator ulong(Channel c) => c.Value;
+    public static implicit operator Channel(ulong v) => new Channel(v);
 
     public static Channel operator |(Channel a, Channel b) => new Channel(a.Value | b.Value);
     public static Channel operator &(Channel a, Channel b) => new Channel(a.Value & b.Value);

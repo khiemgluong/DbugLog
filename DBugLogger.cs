@@ -18,7 +18,7 @@ public enum Priority
 
 public class DBug
 {
-    public static readonly Channel kAllChannels = new Channel(0xFFFFFFFF);
+    public static readonly Channel kAllChannels = new(ulong.MaxValue);
 
     static DBug instance;
     static DBug Instance
@@ -199,7 +199,7 @@ public class DBug
             {
                 if (field.FieldType != channelType) continue;
 
-                Channel channel = new Channel(1u << bitIndex++);
+                Channel channel = new Channel(1UL << bitIndex++);
                 field.SetValue(null, channel);
 
                 channelToName[channel] = $"{category.Name}.{field.Name}";

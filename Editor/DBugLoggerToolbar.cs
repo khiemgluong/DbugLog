@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
-public class DbugLogToolbar : EditorWindow
+public class DBugLoggerToolbar : EditorWindow
 {
-    [MenuItem("Tools/DbugLog Config")]
+    [MenuItem("Tools/DBug Logger")]
     public static void ShowWindow()
     {
-        DbugLogToolbar window = GetWindow<DbugLogToolbar>("DbugLog Config");
+        DBugLoggerToolbar window = GetWindow<DBugLoggerToolbar>("DBug Logger");
 
         // Set fixed dimensions
         float windowWidth = 300f;
@@ -29,9 +29,9 @@ public class DbugLogToolbar : EditorWindow
     }
 
     [SerializeField]
-    private Channel loggerChannels = new Channel(0xFFFFFFFF);
+    Channel loggerChannels = new(ulong.MaxValue);
 
-    private Dictionary<string, bool> foldouts = new Dictionary<string, bool>();
+    Dictionary<string, bool> foldouts = new();
     private Vector2 scrollPos;
 
     private void OnEnable()
